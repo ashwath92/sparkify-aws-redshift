@@ -43,14 +43,14 @@ CREATE TABLE staging_events(
 staging_songs_table_create = ("""
 CREATE TABLE staging_songs (
         num_songs INTEGER,
-        artist_id TEXT
-        artist_latitude NUMERIC
-        artist_longitude NUMERIC
-        artist_location TEXT
-        artist_name TEXT
-        song_id TEXT
-        title TEXT
-        duration NUMERIC
+        artist_id TEXT,
+        artist_latitude NUMERIC,
+        artist_longitude NUMERIC,
+        artist_location TEXT,
+        artist_name TEXT,
+        song_id TEXT,
+        title TEXT,
+        duration NUMERIC,
         year INTEGER
 );
 """)
@@ -72,10 +72,10 @@ CREATE TABLE songplays(
 user_table_create = ("""
 CREATE TABLE users(
     user_id TEXT SORTKEY PRIMARY KEY,
-    first_name NOT NULL,
-    last_name NOT NULL,
-    gender NOT NULL,
-    level NOT NULL
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    gender TEXT,
+    level TEXT NOT NULL
 );
 """)
 
@@ -84,7 +84,7 @@ CREATE TABLE songs(
     song_id TEXT SORTKEY PRIMARY KEY,
     title TEXT NOT NULL,
     artist_id TEXT NOT NULL,
-    year INTEGER NOT NULL,
+    year INTEGER,
     duration NUMERIC
 );
 """)
@@ -112,18 +112,25 @@ CREATE TABLE time(
 """)
 
 # STAGING TABLES
+# Error while inserting timestamps
+# See: https://stackoverflow.com/questions/28287434/how-to-insert-timestamp-column-into-redshift
+# But we have epoch millisecs, so: 
+# https://docs.aws.amazon.com/redshift/latest/dg/copy-parameters-data-conversion.html
 
 staging_events_copy = ("""
-COPY staging_events FROM {bucket}
-CREDENTIALS 'aws-iam-role={arn}'
+COPY staging_events FROM {}
+CREDENTIALS 'aws_iam_role={}'
 REGION 'us-west-2'
-""").format()
+JSON 's3://udacity-dend/log_json_path.json'
+TIMEFORMAT AS 'epochmillisecs'
+""").format(config['S3']['LOG_DATA'], config['IAM_ROLE']['ARN'])
 
 staging_songs_copy = ("""
-COPY staging_songs FROM {bucket}
-CREDENTIALS 'aws-iam-role={arn}''
+COPY staging_songs FROM {}
+CREDENTIALS 'aws_iam_role={}'
 REGION 'us-west-2'
-""").format()
+JSON 'auto'
+""").format(config['S3']['SONG_DATA'], config['IAM_ROLE']['ARN'])
 
 # FINAL TABLES: DON'T INSERT null values
 
@@ -131,8 +138,11 @@ REGION 'us-west-2'
 # log: everything else
 songplay_table_insert = (""" 
 INSERT INTO songplays (start_time, user_id, level, song_id, artist_id, session_id, location, user_agent) 
-SELECT DISTINCT se.start_time, se.user_id, se.level, ss.song_id, ss.artist_id, se.session_id,
-                
+SELECT DISTINCT (ts) AS start_time, userId as user_id, level, ss.song_id, ss.artist_id,
+sessionId as session_id, location, userAgent as user_agent
+FROM staging_songs ss JOIN staging_events se 
+ON (se.song = ss.title AND se.artist = ss.artist_name)
+WHERE se.page='NextSong';
 """)
 
 user_table_insert = ("""
@@ -143,18 +153,26 @@ FROM staging_events WHERE page='NextSong' AND user_id IS NOT NULL;
 
 song_table_insert = ("""
 INSERT INTO SONGS (song_id, title, artist_id, year, duration)
-SELECT  DISTINCT(songId) AS song_id, title, artist_id, year, duration
+SELECT  DISTINCT(song_id), title, artist_id, year, duration
 FROM staging_songs WHERE song_id IS NOT NULL;
 """)
 
 artist_table_insert = (""" 
 INSERT INTO ARTISTS (artist_id, name, location, latitude, longitude)
-SELECT DISTINCT(artistId) AS artist_id, artist_name AS name, artist_location AS location,
+SELECT DISTINCT(artist_id), artist_name AS name, artist_location AS location,
 artist_latitude AS latitude, artist_longitude AS longitude
 FROM staging_songs WHERE artist_id IS NOT NULL;
 """)
 
+# (SELECT DISTINCT (TIMESTAMP 'epoch' + ts/1000 * interval '1 second' AS start_time) FROM 
+#    ) AS TEMP: not necessary now: already ts in staging table.
 time_table_insert = ("""
+INSERT INTO TIME (start_time, hour, day, week, month, year, weekday)
+SELECT start_time, EXTRACT(hour FROM start_time) AS hour,
+EXTRACT(day from start_time) AS day, EXTRACT(WEEK from start_time) AS week,
+EXTRACT(month from start_time) AS month, EXTRACT(year from start_time) AS year,
+EXTRACT(dow from start_time) AS dow FROM
+  (SELECT DISTINCT(ts) AS start_time FROM staging_events )  ;
 """)
 
 # QUERY LISTS

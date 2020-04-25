@@ -182,7 +182,7 @@ def main():
     open_tcp_ports(ec2, myClusterProps, DWH_PORT)
     # Write the Iam role arn and host to a temp file
     print(IAM_ROLE_ARN, HOST)
-    write_iam_role_arn_host(IAM_ROLE_ARN, HOST)
+    #write_iam_role_arn_host(IAM_ROLE_ARN, HOST)
     print(IAM_ROLE_ARN, HOST)
     # Test connection to Redshift db.
     conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(
