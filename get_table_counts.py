@@ -15,6 +15,7 @@ def get_table_counts(cur):
             print("No. of rows in {} is {}.".format(table, num_rows))
     
 def main():
+    """ Main function"""
     config = configparser.ConfigParser()
     config.read('dwh.cfg')
     conn = psycopg2.connect("host={} dbname={} user={} password={} port={}".format(config.get("CLUSTER","HOST"), config.get("CLUSTER","DB_NAME"),

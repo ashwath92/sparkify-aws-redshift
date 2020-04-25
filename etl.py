@@ -4,6 +4,7 @@ from sql_queries import copy_table_queries, insert_table_queries
 
 
 def load_staging_tables(cur, conn):
+    """ Loads both staging tables by executing the copy commands in sql_queries.py"""
     for query in copy_table_queries:
         print("Currently executing", query)
         cur.execute(query)
@@ -11,6 +12,8 @@ def load_staging_tables(cur, conn):
 
 
 def insert_tables(cur, conn):
+    """ Inserts data from the staging tables into the final analytics tables using the corresponding
+    queries from sql_queries.py"""
     for query in insert_table_queries:
         print("Currently executing", query)
         cur.execute(query)
