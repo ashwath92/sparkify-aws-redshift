@@ -71,7 +71,7 @@ CREATE TABLE songplays(
 
 user_table_create = ("""
 CREATE TABLE users(
-    user_id TEXT SORTKEY PRIMARY KEY,
+    user_id TEXT PRIMARY KEY SORTKEY,
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
     gender TEXT,
@@ -81,7 +81,7 @@ CREATE TABLE users(
 
 song_table_create = ("""
 CREATE TABLE songs(
-    song_id TEXT SORTKEY PRIMARY KEY,
+    song_id TEXT PRIMARY KEY SORTKEY,
     title TEXT NOT NULL,
     artist_id TEXT NOT NULL,
     year INTEGER,
@@ -91,7 +91,7 @@ CREATE TABLE songs(
 
 artist_table_create = ("""
 CREATE TABLE artists(
-    artist_id TEXT SORTKEY PRIMARY KEY,
+    artist_id TEXT PRIMARY KEY SORTKEY,
     name TEXT NOT NULL,
     location TEXT,
     latitude NUMERIC,
@@ -101,7 +101,7 @@ CREATE TABLE artists(
 
 time_table_create = ("""
 CREATE TABLE time(
-    start_time TIMESTAMP SORTKEY DISTKEY PRIMARY KEY,
+    start_time TIMESTAMP PRIMARY KEY SORTKEY DISTKEY,
     hour INTEGER NOT NULL,
     day INTEGER NOT NULL,
     week INTEGER NOT NULL,
@@ -168,11 +168,13 @@ FROM staging_songs WHERE artist_id IS NOT NULL;
 #    ) AS TEMP: not necessary now: already ts in staging table.
 time_table_insert = ("""
 INSERT INTO TIME (start_time, hour, day, week, month, year, weekday)
-SELECT start_time, EXTRACT(hour FROM start_time) AS hour,
+SELECT DISTINCT(start_time), EXTRACT(hour FROM start_time) AS hour,
 EXTRACT(day from start_time) AS day, EXTRACT(WEEK from start_time) AS week,
 EXTRACT(month from start_time) AS month, EXTRACT(year from start_time) AS year,
 EXTRACT(dow from start_time) AS dow FROM
-  (SELECT DISTINCT(ts) AS start_time FROM staging_events )  ;
+  (SELECT DISTINCT(ts) AS start_time FROM staging_events se JOIN staging_songs ss
+  ON (se.song = ss.title AND se.artist = ss.artist_name) 
+  WHERE se.page='NextSong')  ;
 """)
 
 # QUERY LISTS
