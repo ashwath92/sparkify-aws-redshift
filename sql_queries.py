@@ -58,10 +58,10 @@ CREATE TABLE staging_songs (
 songplay_table_create = ("""
 CREATE TABLE songplays(
     songplay_id INTEGER IDENTITY(0,1) PRIMARY KEY,
-    start_time TIMESTAMP NOT NULL SORTKEY,
+    start_time TIMESTAMP NOT NULL,
     user_id INTEGER NOT NULL,
     level TEXT,
-    song_id TEXT NOT NULL DISTKEY,
+    song_id TEXT NOT NULL DISTKEY SORTKEY,
     artist_id TEXT NOT NULL,
     session_id INTEGER,
     location TEXT,
@@ -81,7 +81,7 @@ CREATE TABLE users(
 
 song_table_create = ("""
 CREATE TABLE songs(
-    song_id TEXT PRIMARY KEY SORTKEY,
+    song_id TEXT PRIMARY KEY SORTKEY DISTKEY,
     title TEXT NOT NULL,
     artist_id TEXT NOT NULL,
     year INTEGER,
@@ -101,7 +101,7 @@ CREATE TABLE artists(
 
 time_table_create = ("""
 CREATE TABLE time(
-    start_time TIMESTAMP PRIMARY KEY SORTKEY DISTKEY,
+    start_time TIMESTAMP PRIMARY KEY SORTKEY,
     hour INTEGER NOT NULL,
     day INTEGER NOT NULL,
     week INTEGER NOT NULL,
