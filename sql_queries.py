@@ -58,10 +58,10 @@ CREATE TABLE staging_songs (
 songplay_table_create = ("""
 CREATE TABLE songplays(
     songplay_id INTEGER IDENTITY(0,1) PRIMARY KEY,
-    start_time TIMESTAMP NOT NULL SORTKEY DISTKEY,
+    start_time TIMESTAMP NOT NULL SORTKEY,
     user_id INTEGER NOT NULL,
     level TEXT,
-    song_id TEXT NOT NULL,
+    song_id TEXT NOT NULL DISTKEY,
     artist_id TEXT NOT NULL,
     session_id INTEGER,
     location TEXT,
