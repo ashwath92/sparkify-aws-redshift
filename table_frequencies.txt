@@ -1,1 +1,7 @@
-No. of rows in staging_events is 8056.No. of rows in staging_songs is 14896.No. of rows in songplays is 333.No. of rows in users is 104.No. of rows in songs is 14896.No. of rows in artists is 10025.No. of rows in time is 333.
+No. of rows in staging_events is 8056.
+No. of rows in staging_songs is 14896.
+No. of rows in songplays is 333.
+No. of rows in users is 104.
+No. of rows in songs is 14896.
+No. of rows in artists is 10025.
+No. of rows in time is 333.

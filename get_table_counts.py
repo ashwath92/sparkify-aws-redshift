@@ -7,7 +7,7 @@ def get_table_counts(cur):
     base_query = 'SELECT COUNT(*) FROM'
     tables = ['staging_events', 'staging_songs', 'songplays', 'users',
              'songs', 'artists', 'time']
-    with open('table_frequencies_after_inserting_duplicates.txt', 'w') as outfile:
+    with open('table_frequencies.txt', 'w') as outfile:
         for table in tables:
             cur.execute("{} {}".format(base_query, table))
             num_rows = cur.fetchone()[0]
