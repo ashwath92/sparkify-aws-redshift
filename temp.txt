@@ -1,0 +1,2 @@
+arn:aws:iam::385114613455:role/sparkifyRole
+sparkifycluster.cxq5fyul1xf7.us-west-2.redshift.amazonaws.com
